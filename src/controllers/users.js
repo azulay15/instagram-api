@@ -44,6 +44,18 @@ class Users {
 			}
 			res.status(400).json(err);
 		}
+    }
+    
+    async getPosts(req, res) {
+		try {
+			const posts = await Post.find({
+                userId: req.params.id
+            })
+				.sort({createdAt: req.query.sort || 1});
+			res.json(posts);
+		} catch(err) {
+			res.sendStatus(400);
+		}
 	}
 
 	async login(req, res) {
