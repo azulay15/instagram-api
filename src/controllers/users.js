@@ -1,15 +1,25 @@
 const md5 = require('md5');
 const User = require('../models/user');
+const Post = require('../models/post');
 const config = require('../config/env/index');
+const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Types;
 const ERROR_DUPLICATE_VALUE = 11000;
 const DURATION_60D = 60 * 60 * 24 * 60 * 1000;
 
 class Users {
 
-	getAll(req, res) {
-		User.find()
-			.then(users => res.json(users))
-			.catch(err => res.status(500).json(err));
+	async getAll(req, res) {
+		const regex = new RegExp(req.query.username || '', 'i');
+		try {
+			const users = await User
+				.find({ username: regex })
+				.select(['username', 'avatar', 'bio'])
+				.limit(10);
+			res.json(users)
+		} catch (err) {
+			res.status(500).json(err)
+		}
 	}
 
 	async check(req, res) {
@@ -44,18 +54,6 @@ class Users {
 			}
 			res.status(400).json(err);
 		}
-    }
-    
-    async getPosts(req, res) {
-		try {
-			const posts = await Post.find({
-                userId: req.params.id
-            })
-				.sort({createdAt: req.query.sort || 1});
-			res.json(posts);
-		} catch(err) {
-			res.sendStatus(400);
-		}
 	}
 
 	async login(req, res) {
@@ -68,17 +66,30 @@ class Users {
 			if (!user) {
 				res.sendStatus(401);
 				return;
-            }
-            res.cookie(config.cookieName, user._id, {maxAge: DURATION_60D});
+			}
+			res.cookie(config.cookieName, user._id, { maxAge: DURATION_60D, httpOnly: true });
 			res.json(user).send();
 		} catch(err) {
 			res.sendStatus(500);
 		}
-    }
-    
-    async me(req, res) {
-        res.json(req.user).send()
-    }
+	}
+
+	me(req, res) {
+		res.json(req.user);
+	}
+
+	async getPosts(req, res) {
+		try {
+			const posts = await Post
+				.find({
+					user: ObjectId(req.params.id)
+				})
+				.sort({createdAt: req.query.sort || 1});
+			res.json(posts);
+		} catch(err) {
+			res.sendStatus(400);
+		}
+	}
 
 }
 

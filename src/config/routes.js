@@ -23,7 +23,7 @@ routes.put('/users', users.create);
 routes.get('/users/check', users.check);
 routes.post('/users/login', users.login);
 routes.get('/users/me', auth, users.me);
-routes.get('/users/:id/posts', users.getPosts);
+routes.get('/users/:id/posts', auth, users.getPosts);
 
 routes.get('/posts', auth, posts.getAll);
 routes.put('/posts', auth, upload.single('image'), posts.create);

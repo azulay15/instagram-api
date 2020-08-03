@@ -20,17 +20,7 @@ class Posts {
 	async getAll(req, res) {
 		try {
 			const posts = await Post.find()
-				.sort({createdAt: req.query.sort});
-			res.json(posts);
-		} catch(err) {
-			res.sendStatus(400);
-		}
-    }
-    
-    async getMyPosts(req, res) {
-		try {
-			const posts = await Post.findById({_id: id})
-				.sort({createdAt: req.query.sort});
+				.sort({createdAt: req.query.sort || 1});
 			res.json(posts);
 		} catch(err) {
 			res.sendStatus(400);
@@ -76,6 +66,5 @@ class Posts {
 	}
 
 }
-
 
 module.exports = new Posts();
